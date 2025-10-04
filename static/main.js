@@ -19,7 +19,14 @@ function onMapClick(e) {
     document.getElementById("lat").value = e.latlng.lat;
     document.getElementById("lon").value = e.latlng.lng;
 }
-
-function handler(event){alert("AAAAAAAAAAAAAAAAAAAa")}
-
 map.on('click', onMapClick);
+
+//Form submit handler
+function handler(event){
+    event.preventDefault();
+    const day = document.getElementById("day").value;
+    const lat = document.getElementById("lat").value;
+    const lon = document.getElementById("lon").value;
+    alert(`Day: ${day}, Lat: ${lat}, Lon: ${lon}`);
+}
+
