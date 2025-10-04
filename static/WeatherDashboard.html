@@ -1,0 +1,498 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Dashboard | Real-time Weather Conditions | WeatherApp</title>
+  <meta name="description" content="Get accurate weather forecasts with our comprehensive dashboard. View temperature, precipitation, wind speed, and hourly weather charts for any location worldwide." />
+  <meta name="keywords" content="weather dashboard, temperature forecast, precipitation, wind speed, weather chart, hourly weather, weather app" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Weather Dashboard | Real-time Weather Conditions" />
+  <meta property="og:description" content="Get accurate weather forecasts with our comprehensive dashboard. View temperature, precipitation, wind speed, and hourly weather charts." />
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    /* Reset and base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #0f1626;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+    
+    /* Layout components */
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 1500px;
+      margin-top: 46px;
+      padding: 12px 0;
+    }
+    
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .search-container {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+      flex: 1;
+      min-width: 280px;
+    }
+    
+    .search-input {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+      padding: 10px 24px 10px 36px;
+      background-color: rgba(120, 120, 128, 0.2);
+      border: none;
+      border-radius: 22px;
+      color: #ffffff;
+      font-size: 17px;
+      font-family: 'SF Pro', sans-serif;
+      font-weight: 400;
+      line-height: 21px;
+      position: relative;
+    }
+    
+    .search-input::placeholder {
+      color: #ffffff;
+      opacity: 0.7;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      width: 18px;
+      height: 18px;
+    }
+    
+    .mic-icon {
+      position: absolute;
+      right: 12px;
+      width: 14px;
+      height: 18px;
+    }
+    
+    .datetime-container {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+      width: auto;
+    }
+    
+    .date-pill {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      background-color: rgba(120, 120, 128, 0.2);
+      border-radius: 22px;
+    }
+    
+    .time-pill {
+      padding: 10px;
+      background-color: rgba(120, 120, 128, 0.2);
+      border-radius: 22px;
+      font-size: 17px;
+      font-family: 'SF Pro', sans-serif;
+      font-weight: 400;
+      line-height: 21px;
+      color: #c3c5c9;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .search-button {
+      padding: 12px 34px;
+      background-color: rgba(0, 136, 255, 0.62);
+      border: none;
+      border-radius: 22px;
+      color: #ffffff;
+      font-size: 15px;
+      font-family: 'SF Pro', sans-serif;
+      font-weight: 400;
+      line-height: 18px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .search-button:hover {
+      background-color: rgba(0, 136, 255, 0.8);
+      transform: translateY(-1px);
+    }
+    
+    .content-container {
+      display: flex;
+      flex-direction: column;
+      gap: 44px;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+      max-width: 1500px;
+      margin-bottom: 60px;
+    }
+    
+    .weather-cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      width: 100%;
+    }
+    
+    .weather-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 38px;
+      background-color: #0c1321;
+      border-radius: 28px;
+      text-align: center;
+    }
+    
+    .weather-card.comfortable {
+      background-color: #074538;
+      padding: 18px;
+    }
+    
+    .weather-card h2 {
+      font-size: 32px;
+      font-family: 'SF Pro', sans-serif;
+      font-weight: 400;
+      line-height: 39px;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+    
+    .weather-card .value {
+      font-size: 32px;
+      font-family: 'SF Pro', sans-serif;
+      font-weight: 400;
+      line-height: 39px;
+      color: #ffffff;
+    }
+    
+    .comfort-icon {
+      width: 86px;
+      height: 86px;
+      margin-top: 8px;
+    }
+    
+    .chart-container {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+    }
+    
+    .chart-wrapper {
+      width: 100%;
+      height: 400px;
+      position: relative;
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .chart-title {
+      font-size: 24px;
+      font-family: 'SF Pro', sans-serif;
+      font-weight: 400;
+      color: #ffffff;
+    }
+    
+    .temperature-selector {
+      padding: 8px 16px;
+      background-color: rgba(59, 130, 246, 0.8);
+      border: none;
+      border-radius: 16px;
+      color: #ffffff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    /* Typography */
+    .date-text {
+      font-size: 17px;
+      font-family: 'SF Pro', sans-serif;
+      font-weight: 400;
+      line-height: 21px;
+      color: #ffffff;
+    }
+    
+    .year-text {
+      font-size: 17px;
+      font-family: 'SF Pro', sans-serif;
+      font-weight: 400;
+      line-height: 21px;
+      color: #c3c5c9;
+    }
+    
+    /* Interactive states */
+    .search-input:focus {
+      outline: 2px solid #0088ff;
+      outline-offset: 2px;
+    }
+    
+    .search-button:active {
+      transform: scale(0.95);
+    }
+    
+    .weather-card:hover {
+      transform: translateY(-2px);
+      transition: transform 0.3s ease;
+    }
+    
+    /* Responsive media queries */
+    @media (min-width: 640px) {
+      .main-container {
+        padding: 24px;
+      }
+      
+      .weather-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+      
+      .header-row {
+        flex-wrap: nowrap;
+      }
+      
+      .search-container {
+        min-width: 400px;
+      }
+    }
+    
+    @media (min-width: 768px) {
+      .main-container {
+        gap: 40px;
+        padding: 32px;
+      }
+      
+      .weather-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+      
+      .chart-wrapper {
+        height: 450px;
+      }
+      
+      .chart-title {
+        font-size: 28px;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .weather-cards {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+      
+      .chart-wrapper {
+        height: 500px;
+      }
+    }
+    
+    @media (min-width: 1280px) {
+      .main-container {
+        padding: 40px;
+      }
+      
+      .content-container {
+        width: 78%;
+      }
+    }
+  </style>
+<script type="module" src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fmakarsap8023back.builtwithrocket.new&_be=https%3A%2F%2Fapplication.rocket.new&_v=0.1.8"></script>
+</head>
+<body>
+  <main class="main-container">
+    <header class="header">
+      <div class="header-row">
+        <div class="search-container">
+          <div style="position: relative; width: 100%;">
+            <img src="../assets/images/img_.png" alt="Search icon" class="search-icon" />
+            <input type="search" class="search-input" placeholder="Search a place or paste coordinates (e.g. " Yosemite, CA")" aria-label="Search location" />
+            <img src="../assets/images/img_18x14.png" alt="Microphone icon" class="mic-icon" />
+          </div>
+        </div>
+        
+        <div class="datetime-container">
+          <div class="date-pill">
+            <span class="date-text">Apr 1,</span>
+            <span class="year-text">2025</span>
+          </div>
+          <button class="time-pill" type="button">9:41 AM</button>
+        </div>
+        
+        <button class="search-button" type="button">Search</button>
+      </div>
+    </header>
+    
+    <section class="content-container">
+      <div class="weather-cards">
+        <article class="weather-card">
+          <h2>Temperature</h2>
+          <div class="value">69 °C</div>
+        </article>
+        
+        <article class="weather-card">
+          <h2>Precipitation</h2>
+          <div class="value">55 %</div>
+        </article>
+        
+        <article class="weather-card">
+          <h2>Wind Speed</h2>
+          <div class="value">47 km/h</div>
+        </article>
+        
+        <article class="weather-card comfortable">
+          <h2>Comfortable</h2>
+          <img src="../assets/images/img_reshot_icon_smi_gray_900_03.svg" alt="Comfortable weather indicator" class="comfort-icon" />
+        </article>
+      </div>
+      
+      <section class="chart-container">
+        <div class="chart-wrapper">
+          <div class="chart-header">
+            <h2 class="chart-title">Temperature by hours</h2>
+            <button class="temperature-selector" type="button">Temperature ⌄</button>
+          </div>
+          <canvas id="temperatureChart" role="img" aria-label="Hourly temperature chart showing temperature variations throughout the day"></canvas>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const ctx = document.getElementById('temperatureChart')?.getContext('2d');
+    if (!ctx || typeof Chart === 'undefined') {
+      console.warn('Chart.js not available, showing placeholder');
+      const chartContainer = document.getElementById('temperatureChart');
+      if (chartContainer) {
+        chartContainer.innerHTML = `
+          <div class="chart-placeholder" style="background-color:#1e293b;height:100%;display:flex;align-items:center;justify-content:center;border-radius:12px;color:#64748b;">
+            Temperature Chart Placeholder
+          </div>
+        `;
+      }
+    } else {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['6 am', '9 am', '12 pm', '3 pm', '6 pm', '9 pm'],
+          datasets: [{
+            label: 'Temperature (°C)',
+            data: [26, 35, 55, 69, 58, 32],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#3b82f6',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              display: false 
+            },
+            tooltip: { 
+              enabled: true,
+              backgroundColor: 'rgba(15, 22, 38, 0.9)',
+              titleColor: '#ffffff',
+              bodyColor: '#ffffff',
+              borderColor: '#3b82f6',
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: '#ffffff',
+                font: {
+                  family: 'SF Pro',
+                  size: 14
+                }
+              }
+            },
+            y: {
+              display: true,
+              position: 'left',
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              ticks: {
+                color: '#ffffff',
+                font: {
+                  family: 'SF Pro',
+                  size: 14
+                },
+                callback: function(value) {
+                  return value + ' °C';
+                }
+              },
+              min: 20,
+              max: 75
+            }
+          },
+          elements: {
+            point: {
+              hoverRadius: 8
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
