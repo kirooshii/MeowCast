@@ -1,29 +1,36 @@
+from datetime import datetime
 import sys
 from flask import Flask, request, jsonify
 from waitress import serve
-import weather_data 
+from weather_data import get_prediction
+
 ARGS_LENGTH = 3
+
 app = Flask(__name__)
+
+# Serve the home page
 @app.route("/")
 def home_page():
     return app.send_static_file("index.html")
 
-
+#API endpoint to get weather data
 @app.route("/data", methods=["GET"])
 def get_data():
-    day = request.args.get('day', type=int)
-    #latitude = request.args.get('latitude', type=float)
-    #longitude = request.args.get('longitude', type=float)
-    latitude = 41.711033
-    longitude = 44.758182
-    data = weather_data.get_prediction(day, latitude, longitude)
+    unix_time = request.args.get('unix-time', type=int)
+    latitude = request.args.get('latitude', type=float)
+    longitude = request.args.get('longitude', type=float)
+    #latitude = 41.711033
+    #longitude = 44.758182
+    day = datetime.fromtimestamp(unix_time).strftime("%m%d")
+    data = get_prediction(day, latitude, longitude)
     return jsonify(data)
 
+#Testing
 @app.route("/test")
 def test():
     # Test January 1st (day 1) and July 1st (day 182)
-    jan_data = weather_data.get_prediction(1, 41.711033, 44.758182)
-    jul_data = weather_data.get_prediction(182, 41.711033, 44.758182)
+    jan_data = get_prediction(1, 41.711033, 44.758182)
+    jul_data = get_prediction(182, 41.711033, 44.758182)
     
     return jsonify({
         "january_1_noon": jan_data.get(12, "No data"),

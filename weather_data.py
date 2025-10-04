@@ -4,7 +4,6 @@ from datetime import datetime, date
 from statistics import mean
 import requests
 import numpy as np
-
 HOT_THRESH = 30.0
 COLD_THRESH = -20.0    
 WINDY_THRESH = 10.0   # m/s
@@ -29,16 +28,14 @@ def get_nasa_data(start_day:int, end_day:int, lat:float, lon:float) -> dict:
     response = requests.get(POWER_HOURLY_API, params=params)
     return response.json()
 
-def calculate(lat:float, lon:float)->dict:
-    fmt_day = "1018"
+def get_prediction(fmt_day:str, lat:float, lon:float)->dict:
     weather_stats = {}
     
     # Fetch data year by year (API has limits on JSON response size)
     grouped = defaultdict(lambda: {'temp': [], 'precip': [], 'wind': []})
-    
 
     data = get_nasa_data(f'{START_YEAR}{fmt_day}', f'{END_YEAR}{fmt_day}', lat, lon)
-    
+
     if 'parameters' not in data:
         print(f"Error fetching data")
         return {}
@@ -102,16 +99,4 @@ def calculate(lat:float, lon:float)->dict:
             {"very_hot": round(prob_hot, 2), "very_cold": round(prob_cold, 2), "very_windy": round(prob_windy, 2), 
                 "very_wet": round(prob_wet, 2), "very_uncomfortable": round(prob_uncomfortable, 2)}
         ]
-    
     return weather_stats
-
-
-def get_prediction(day:int, lat:float, lon:float)->dict:
-    # Convert date to day of year if needed
-    if isinstance(day, date):
-        day_of_year = day.timetuple().tm_yday
-    else:
-        day_of_year = day
-    
-    # Return calculated stats, or empty dict if not available
-    return calculate(lat, lon)
