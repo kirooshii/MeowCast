@@ -22,7 +22,7 @@ def get_data():
     unix_time = request.args.get('unix-time', type=int)
     latitude = request.args.get('latitude', type=float)
     longitude = request.args.get('longitude', type=float)
-    if unix_time is None or latitude is None or longitude is None or latitude < MIN_LATITUDE or latitude > MAX_LONGITUDE  or longitude < MIN_LONGITUDE or longitude > MAX_LONGITUDE:
+    if unix_time is None or latitude is None or longitude is None or latitude < MIN_LATITUDE or latitude > MAX_LATITUDE  or longitude < MIN_LONGITUDE or longitude > MAX_LONGITUDE:
         return jsonify({"error": "Missing required parameters: unix-time, latitude, longitude"}), 400
     #Examples
     #latitude = 41.711033
