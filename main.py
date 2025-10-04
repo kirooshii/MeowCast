@@ -15,6 +15,7 @@ def get_data():
     #latitude = request.args.get('latitude', type=float)
     #longitude = request.args.get('longitude', type=float)
     latitude = 41.711033
+    longitude = 44.758182
     data = weather_data.get_prediction(day, latitude, longitude)
     return jsonify(data)
 
