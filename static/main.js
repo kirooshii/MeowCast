@@ -56,7 +56,7 @@ async function handler(event){
         
         if (!response.ok) {
             const error = await response.json();
-            alert(`Error: ${error.error}`);
+            console.log(`Error: ${error.error}`);
             return;
         }
         
@@ -64,116 +64,73 @@ async function handler(event){
         displayWeatherData(weatherData);
         
     } catch (error) {
-        alert(`Failed to fetch weather data: ${error.message}`);
+        console.log(`Failed to fetch weather data: ${error.message}`);
     }
 }
 
 // Display weather data in the result section
 function displayWeatherData(data) {
-    // Use noon (hour 12) as the primary display
-    const noonData = data[12];
-    
-    if (!noonData) {
-        alert('No weather data available for this location and date.');
-        return;
+    console.log(data);
+    let mxTemp = -Infinity;
+    let mnTemp = Infinity;
+    let avgWindSpeed = 0;
+    let avgPrecipitation = 0;
+    let avgWindyProb = 0;
+    let avgHotProb = 0;
+    let avgColdProb = 0;
+    let avgWetProb = 0;
+    let avgUncomfortableProb = 0;
+    for (let hour = 0; hour < 24; hour++) {
+        mxTemp = Math.max(mxTemp, data[hour][0].temperature);
+        mnTemp = Math.min(mnTemp, data[hour][0].temperature);
+        avgWindSpeed += data[hour][0].wind_speed;
+        avgPrecipitation += data[hour][0].precipitation;
+        avgUncomfortableProb += data[hour][1].very_uncomfortable;
+        avgHotProb += data[hour][1].very_hot;
+        avgColdProb += data[hour][1].very_cold;
+        avgWindyProb += data[hour][1].very_windy;
+        avgWetProb += data[hour][1].very_wet;
     }
-    
-    const [measurements, probabilities] = noonData;
-    
+    avgWindSpeed /= 24;
+    avgPrecipitation /= 24;
+    avgUncomfortableProb /= 24;
+    avgHotProb /= 24;
+    avgColdProb /= 24;
+    avgWindyProb /= 24;
+    avgWetProb /= 24;
     // Update temperature
-    document.querySelector('#temp p').textContent = `${measurements.temperature}°C`;
+    document.getElementById('temp').innerHTML = `
+    <h3>Temperature</h3>
+    <p>Min: ${mnTemp.toFixed(2)}C°</p>
+    <p>Max: ${mxTemp.toFixed(2)}C°</p>
+    <p>Probability of a very hot weather: ${(avgHotProb*100).toFixed(2)}%</p>
+    <p>Probability of a very cold weather: ${(avgColdProb*100).toFixed(2)}%</p>
+    `;
     
     // Update precipitation
-    document.querySelector('#precip p').textContent = `${measurements.precipitation} mm/hr`;
+    document.getElementById('precip').innerHTML = `
+    <h3>Precipitation</h3>
+    <p>${avgPrecipitation.toFixed(2)} mm/hr</p>
+    <p>Probability of a very wet weather: ${(avgWetProb*100).toFixed(2)}%</p>
+    `;
     
     // Update wind speed
-    document.querySelector('#wind-speed p').textContent = `${measurements.wind_speed} m/s`;
+    document.getElementById('wind-speed').innerHTML = `
+    <h3>Wind Speed</h3><p>${avgWindSpeed.toFixed(2)} m/s</p>
+    <p>Probability of a very windy weather: ${(avgWindyProb*100).toFixed(2)}%</p>
+    `;
     
     // Update comfort level
-    const comfortLevel = getComfortLevel(probabilities);
-    document.querySelector('#comfort p').textContent = comfortLevel;
+    document.getElementById('comfort').innerHTML = `
+    <h3>Comfortability</h3>
+    <p>Probability of a very uncomfortable weather: ${(avgUncomfortableProb*100).toFixed(2)   }%</p>
+    `;
     
     // Create wind speed graph
     createWindSpeedGraph(data);
 }
 
-// Determine comfort level based on probabilities
-function getComfortLevel(prob) {
-    if (prob.very_uncomfortable > 0.5) return "Very Uncomfortable";
-    if (prob.very_uncomfortable > 0.2) return "Uncomfortable";
-    if (prob.very_hot > 0.5) return "Very Hot";
-    if (prob.very_cold > 0.5) return "Very Cold";
-    if (prob.very_windy > 0.5) return "Very Windy";
-    if (prob.very_wet > 0.5) return "Very Wet";
-    return "Comfortable";
-}
-
 // Create a simple wind speed graph
-function createWindSpeedGraph(data) {
-    const graphContainer = document.querySelector('#graph');
-    
-    // Clear previous graph
-    const existingCanvas = graphContainer.querySelector('canvas');
-    if (existingCanvas) {
-        existingCanvas.remove();
-    }
-    
-    // Create canvas for simple visualization
-    const canvas = document.createElement('canvas');
-    canvas.width = 600;
-    canvas.height = 200;
-    graphContainer.appendChild(canvas);
-    
-    const ctx = canvas.getContext('2d');
-    const padding = 40;
-    const graphWidth = canvas.width - 2 * padding;
-    const graphHeight = canvas.height - 2 * padding;
-    
-    // Extract wind speeds for each hour
-    const windSpeeds = [];
-    for (let hour = 0; hour < 24; hour++) {
-        windSpeeds.push(data[hour][0].wind_speed);
-    }
-    
-    const maxWind = Math.max(...windSpeeds, 10);
-    
-    // Draw axes
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, canvas.height - padding);
-    ctx.lineTo(canvas.width - padding, canvas.height - padding);
-    ctx.stroke();
-    
-    // Draw wind speed line
-    ctx.strokeStyle = '#2196F3';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    
-    for (let i = 0; i < 24; i++) {
-        const x = padding + (i / 23) * graphWidth;
-        const y = canvas.height - padding - (windSpeeds[i] / maxWind) * graphHeight;
-        
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
-    }
-    ctx.stroke();
-    
-    // Draw hour labels
-    ctx.fillStyle = '#333';
-    ctx.font = '10px Arial';
-    ctx.textAlign = 'center';
-    for (let i = 0; i < 24; i += 3) {
-        const x = padding + (i / 23) * graphWidth;
-        ctx.fillText(i + 'h', x, canvas.height - padding + 15);
-    }
-    
-    // Draw wind speed labels
-    ctx.textAlign = 'right';
-    ctx.fillText('0', padding - 5, canvas.height - padding + 5);
-    ctx.fillText(maxWind.toFixed(1), padding - 5, padding + 5);
+function renderGraph(data) {
+
 }
