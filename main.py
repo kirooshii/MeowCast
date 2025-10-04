@@ -5,7 +5,10 @@ from waitress import serve
 from weather_data import get_prediction
 
 ARGS_LENGTH = 3
-
+MAX_LATITUDE = 90
+MIN_LATITUDE = -90
+MAX_LONGITUDE = 180
+MIN_LONGITUDE = -180
 app = Flask(__name__)
 
 # Serve the home page
@@ -19,10 +22,15 @@ def get_data():
     unix_time = request.args.get('unix-time', type=int)
     latitude = request.args.get('latitude', type=float)
     longitude = request.args.get('longitude', type=float)
+    if unix_time is None or latitude is None or longitude is None or latitude < MIN_LATITUDE or latitude > MAX_LONGITUDE  or longitude < MIN_LONGITUDE or longitude > MAX_LONGITUDE:
+        return jsonify({"error": "Missing required parameters: unix-time, latitude, longitude"}), 400
+    #Examples
     #latitude = 41.711033
     #longitude = 44.758182
     day = datetime.fromtimestamp(unix_time).strftime("%m%d")
     data = get_prediction(day, latitude, longitude)
+    if not data:
+        return jsonify({"error": "Could not fetch weather data"}), 500
     return jsonify(data)
 
 #Testing
@@ -34,8 +42,7 @@ def test():
     
     return jsonify({
         "january_1_noon": jan_data.get(12, "No data"),
-        "july_1_noon": jul_data.get(12, "No data"),
-        "total_days_calculated": len(weather_data.WEATHER_STATS)
+        "july_1_noon": jul_data.get(12, "No data")
     })
 
 #Run the app using waitress for production, or Flask for development

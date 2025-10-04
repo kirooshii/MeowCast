@@ -37,7 +37,7 @@ def get_prediction(fmt_day:str, lat:float, lon:float)->dict:
     data = get_nasa_data(f'{START_YEAR}{fmt_day}', f'{END_YEAR}{fmt_day}', lat, lon)
 
     if 'parameters' not in data:
-        print(f"Error fetching data")
+        print("Error fetching data")
         return {}
     
     temps = data['properties']['parameter']['T2M']
