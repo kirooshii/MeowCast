@@ -43,6 +43,15 @@ function handler(event){
         alert('Please enter valid latitude and longitude values.');
         return;
     }
-    alert(`Day: ${day}, Lat: ${lat}, Lon: ${lon}`);
+    fetch(`/data?unix-time=${Math.floor(date.getTime() / 1000)}&latitude=${lat}&longitude=${lon}`).then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    }).then(data => {
+        console.log(data);
+    }).catch(error => {
+        alert(`Error: ${error.message}`);
+    });
 }
 
