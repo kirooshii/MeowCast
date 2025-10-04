@@ -24,9 +24,25 @@ map.on('click', onMapClick);
 //Form submit handler
 function handler(event){
     event.preventDefault();
+    //validate the input
     const day = document.getElementById("day").value;
+    const date = new Date(day);
+    const now = new Date();
+    if (isNaN(date)) {
+      alert('Please enter a valid date.');
+      return;
+    }
+    if (date <= now) {
+      alert("Please enter a future date.");
+      return;
+    } 
+
     const lat = document.getElementById("lat").value;
     const lon = document.getElementById("lon").value;
+    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        alert('Please enter valid latitude and longitude values.');
+        return;
+    }
     alert(`Day: ${day}, Lat: ${lat}, Lon: ${lon}`);
 }
 
