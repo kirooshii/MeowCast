@@ -11,6 +11,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Weather app</title>
 </head>
 <body>
@@ -27,6 +28,7 @@
             <button>Get my prediction</button>
         </form>
         <div id="map"></div>
+        <div id="loading" style="display:none;">Loading...</div>
         <article id="result">
             <h2>Your prediction</h2>
             <article id="temp" class="small-container">
@@ -51,7 +53,18 @@
                 <p>Probability of a very uncomfortable weather: --%</p>
             </article>
             <article id="graph" class="big-container">
-                <h3>Wind Speed by hours</h3>
+                <form id="select-graph" action="" onsubmit="graphHandler(event)" hidden>
+                    <label for="chart"><h3>Graph of the hourly data</h3></label>
+                    <select name="type" id="chart">
+                        <option value="temperature">Temperature</option>
+                        <option value="wind_speed">Wind Speed</option>
+                        <option value="precipitation">Precipitation</option>
+                    </select>
+                    <button>Show</button>
+                </form>
+                <div>
+                    <canvas id="myChart"></canvas>
+                </div>
             </article>
         </article>
     </main>

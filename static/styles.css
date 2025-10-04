@@ -1,1 +1,164 @@
-#map { height: 500px; width: 500px;}
+/* styles.css — Dark dashboard style for Weather App
+   Drop this into ./static/styles.css
+*/
+
+:root{
+  --bg:#071021; /* page background */
+  --card:#0f1724; /* card background */
+  --card-2:#0b1726; /* slightly different card */
+  --muted:#98a3b3;
+  --accent:#3aa0ff;
+  --accent-2:#5b8cff;
+  --danger:#b62525;
+  --glass: rgba(255,255,255,0.03);
+  --glass-2: rgba(255,255,255,0.02);
+  --radius:14px;
+  --shadow: 0 6px 18px rgba(3,10,18,0.6);
+  --card-shadow: 0 8px 30px rgba(2,8,18,0.7);
+}
+
+/* Reset & base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, var(--bg) 0%, #071424 100%);
+  color:#dbe8ff;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+main{
+  max-width:1180px;
+  margin:28px auto;
+  padding:28px;
+  border-radius:16px;
+}
+
+h1{
+  margin:0 0 6px 0;
+  font-weight:600;
+  letter-spacing:0.2px;
+  color:#ecf6ff;
+  font-size:20px;
+}
+main p{color:var(--muted); margin:4px 0 18px 0}
+
+/* Top form */
+form{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+form label{font-size:13px;color:var(--muted);margin-right:6px}
+form input[type="date"],
+form input[type="text"],
+form select{
+  background:var(--glass);
+  border:1px solid rgba(255,255,255,0.03);
+  color:var(--muted);
+  padding:10px 12px;
+  border-radius:10px;
+  outline:none;
+  min-width:160px;
+  transition:all .18s ease;
+}
+form input:focus, form select:focus{box-shadow:0 4px 20px rgba(58,160,255,0.08); border-color:var(--accent)}
+
+form button{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:12px;
+  cursor:pointer;
+  box-shadow: 0 8px 20px rgba(75,140,255,0.12);
+  font-weight:600;
+}
+
+/* Loading */
+#loading{margin:14px 0;padding:10px 12px;border-radius:10px;background:var(--glass);display:inline-block}
+
+/* Map */
+#map{height:360px;border-radius:12px;overflow:hidden;margin:18px 0;border:1px solid rgba(255,255,255,0.03);box-shadow:var(--card-shadow);}
+
+/* Result grid */
+#result{
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:18px;
+  align-items:start;
+}
+#result > h2{
+  grid-column:1 / -1;
+  font-weight:600;
+  margin:0 0 4px 0;
+  color:#f2f9ff;
+}
+
+.small-container{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:var(--radius);
+  padding:16px;
+  min-height:110px;
+  box-shadow:var(--shadow);
+  border:1px solid rgba(255,255,255,0.02);
+}
+.small-container h3{margin:0 0 8px 0;font-size:15px}
+.small-container p{margin:6px 0;color:var(--muted);font-size:14px}
+
+/* Specific card styling */
+#precip{background:linear-gradient(180deg, rgba(11,22,36,0.4), rgba(10,18,30,0.2));}
+#wind-speed{background:linear-gradient(180deg, rgba(6,16,28,0.45), rgba(10,20,32,0.2));}
+#temp{background:linear-gradient(180deg, rgba(8,18,30,0.45), rgba(6,14,24,0.18));}
+#comfort{
+  background: linear-gradient(180deg, rgba(182,37,37,0.12), rgba(182,37,37,0.06));
+  color:#ffecec;
+  border:1px solid rgba(182,37,37,0.2);
+}
+#comfort h3{color:#ffecec}
+
+/* Graph area: Make it span full width */
+.big-container{
+  grid-column:1 / -1;
+  background: linear-gradient(180deg, rgba(2,8,18,0.6), rgba(10,22,34,0.4));
+  padding:14px 18px;
+  border-radius:16px;
+  box-shadow:var(--card-shadow);
+  border:1px solid rgba(255,255,255,0.02);
+}
+
+#select-graph{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+#select-graph label h3{margin:0;color:#e9f5ff}
+#select-graph select{min-width:200px}
+#myChart{width:100% !important; height:360px !important; background:linear-gradient(180deg, rgba(12,22,36,0.6), rgba(5,12,22,0.3)); border-radius:12px;padding:8px}
+
+/* Chart.js customizations via CSS (canvas container) */
+canvas{display:block}
+
+/* Small screens responsiveness */
+@media (max-width:1000px){
+  main{padding:18px}
+  #map{height:280px}
+  #result{grid-template-columns: repeat(2,1fr)}
+  .big-container{grid-column:1 / -1}
+}
+
+@media (max-width:600px){
+  #result{grid-template-columns:1fr}
+  form{flex-direction:column;align-items:stretch}
+  form input, form select{width:100%}
+  #map{height:220px}
+  #myChart{height:240px !important}
+  main{margin:10px}
+}
+
+/* Tiny UI polish */
+a{color:var(--accent)}
+button:active{transform:translateY(1px)}
+
+/* Leaflet overrides */
+.leaflet-control{border-radius:10px}
+.leaflet-popup-content-wrapper{background:var(--card); color:var(--muted)}
+
+/* Utility */
+.center{display:flex;align-items:center;justify-content:center}
+
+/* Accessibility: focus styles */
+:focus{outline:2px solid rgba(90,160,255,0.12);outline-offset:2px}

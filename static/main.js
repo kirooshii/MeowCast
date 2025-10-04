@@ -2,7 +2,13 @@ const lat = 41.711033;
 const lon = 44.758182;
 const zoom = 13;
 const map = L.map('map').setView([lat, lon], zoom);
-
+const params = 0;
+const probabilities = 1;
+const temperature = "temperature";
+const windSpeed = "wind_speed";
+const precipitation = "precipitation";
+let weatherData = {};
+let myChart = {};
 //Basic set up for Leaflet map
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -47,6 +53,10 @@ async function handler(event){
         return;
     }
     
+    //Show loading sign
+    const loading = document.getElementById('loading');
+    loading.style.display = 'block';
+
     // Convert date to unix timestamp (in seconds)
     const unixTime = Math.floor(date.getTime() / 1000);
     
@@ -60,11 +70,13 @@ async function handler(event){
             return;
         }
         
-        const weatherData = await response.json();
+        weatherData = await response.json();
         displayWeatherData(weatherData);
         
     } catch (error) {
         console.log(`Failed to fetch weather data: ${error.message}`);
+    } finally {
+        loading.style.display = 'none'; // hide loading
     }
 }
 
@@ -81,15 +93,15 @@ function displayWeatherData(data) {
     let avgWetProb = 0;
     let avgUncomfortableProb = 0;
     for (let hour = 0; hour < 24; hour++) {
-        mxTemp = Math.max(mxTemp, data[hour][0].temperature);
-        mnTemp = Math.min(mnTemp, data[hour][0].temperature);
-        avgWindSpeed += data[hour][0].wind_speed;
-        avgPrecipitation += data[hour][0].precipitation;
-        avgUncomfortableProb += data[hour][1].very_uncomfortable;
-        avgHotProb += data[hour][1].very_hot;
-        avgColdProb += data[hour][1].very_cold;
-        avgWindyProb += data[hour][1].very_windy;
-        avgWetProb += data[hour][1].very_wet;
+        mxTemp = Math.max(mxTemp, data[hour][params].temperature);
+        mnTemp = Math.min(mnTemp, data[hour][params].temperature);
+        avgWindSpeed += data[hour][params].wind_speed;
+        avgPrecipitation += data[hour][params].precipitation;
+        avgUncomfortableProb += data[hour][probabilities].very_uncomfortable;
+        avgHotProb += data[hour][probabilities].very_hot;
+        avgColdProb += data[hour][probabilities].very_cold;
+        avgWindyProb += data[hour][probabilities].very_windy;
+        avgWetProb += data[hour][probabilities].very_wet;
     }
     avgWindSpeed /= 24;
     avgPrecipitation /= 24;
@@ -123,14 +135,64 @@ function displayWeatherData(data) {
     // Update comfort level
     document.getElementById('comfort').innerHTML = `
     <h3>Comfortability</h3>
-    <p>Probability of a very uncomfortable weather: ${(avgUncomfortableProb*100).toFixed(2)   }%</p>
+    <p>Probability of a very uncomfortable weather: ${(avgUncomfortableProb*100).toFixed(2)}%</p>
     `;
     
     // Create wind speed graph
-    createWindSpeedGraph(data);
+    document.getElementById("select-graph").removeAttribute("hidden");
+    renderGraph(data, temperature);
 }
 
 // Create a simple wind speed graph
-function renderGraph(data) {
-
+function renderGraph(data, type) {
+    let label = "";
+    if (type === "wind_speed") {
+        label = "Average wind speed in m/s every hour";
+    } else if (type === "precipitation") {
+        label = "Average precipitation in mm/hr every hour";
+    } else if (type === "temperature") {
+        label = "Average temperature in C every hour";
+    } else {
+        return;
+    }
+    const ctx = document.getElementById('myChart');
+    const hourlyData = []
+    for (let i = 0; i < 24; i++) {
+        hourlyData.push(data[i][params][type])
+    }
+    console.log(hourlyData)
+    if (myChart && typeof myChart.destroy === 'function') {
+        myChart.destroy();
+    }
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+        labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'],
+        datasets: [{
+            label: label,
+            data: hourlyData,
+            borderWidth: 1,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+        },
+        options: {
+        scales: {
+            y: {
+            beginAtZero: true
+            }
+        }
+        }
+    });
 }
+
+function graphHandler(event) {
+    event.preventDefault();
+    if (weatherData && Object.keys(weatherData).length > 0) {
+        const data = new FormData(event.target);
+        console.log(data);
+        const type = data.get('type');
+        renderGraph(weatherData, type);
+    }
+}
+
