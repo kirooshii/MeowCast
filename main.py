@@ -12,13 +12,11 @@ def home_page():
 @app.route("/data", methods=["GET"])
 def get_data():
     day = request.args.get('day', type=int)
-    latitude = request.args.get('latitude', type=float)
-    longitude = request.args.get('longitude', type=float)
+    #latitude = request.args.get('latitude', type=float)
+    #longitude = request.args.get('longitude', type=float)
+    latitude = 41.711033
     data = weather_data.get_prediction(day, latitude, longitude)
     return jsonify(data)
-
-#Calculate weather data before serving
-weather_data.calculate()
 
 @app.route("/test")
 def test():

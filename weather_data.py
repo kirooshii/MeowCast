@@ -9,11 +9,9 @@ COLD_THRESH = -20.0
 WINDY_THRESH = 10.0   # m/s
 WET_THRESH = 1.0      # mm/hr
 POWER_HOURLY_API = "https://power.larc.nasa.gov/api/temporal/hourly/point"
-START_DAY = 20010101 # Hour by Hour data only goes from 2001
+START_DAY = 20200101 
 END_DAY = 20241231
 
-# Global storage for calculated weather statistics
-WEATHER_STATS = {}
 
 # Fetch temperature, precipitation and wind speed data from NASA POWER API
 def get_nasa_data(start_day:int, end_day:int, lat:float, lon:float) -> dict:
@@ -30,62 +28,54 @@ def get_nasa_data(start_day:int, end_day:int, lat:float, lon:float) -> dict:
     response = requests.get(POWER_HOURLY_API, params=params)
     return response.json()
 
-def calculate()->dict:
-    """
-    Calculate weather statistics from historical NASA data.
-    Groups data by day-of-year and hour, computes averages and probabilities.
-    """
-    global WEATHER_STATS
+def calculate(lat:float, lon:float)->dict:
+    weather_stats = {}
     
     # Fetch data year by year (API has limits on JSON response size)
     grouped = defaultdict(lambda: defaultdict(lambda: {'temp': [], 'precip': [], 'wind': []}))
     
-    for year in range(2001, 2025):  # 2001 to 2024
-        start = int(f"{year}0101")
-        end = int(f"{year}1231")
-        
-        print(f"Fetching data for {year}...")
-        data = get_nasa_data(start, end, 41.711033, 44.758182)
-        
-        if 'parameters' not in data:
-            print(f"Error fetching data for {year}: {data}")
+
+    data = get_nasa_data(START_DAY, END_DAY, lat, lon)
+    
+    if 'parameters' not in data:
+        print(f"Error fetching data for {year}: {data}")
+        return {}
+    
+    temps = data['properties']['parameter']['T2M']
+    precip = data['properties']['parameter']['PRECTOTCORR']
+    winds = data['properties']['parameter']['WS2M']
+    
+    for timestamp_str in temps.keys():
+        if not timestamp_str.isdigit():  # Skip non-timestamp keys like 'units'
             continue
+        year = int(timestamp_str[:4])
+        month = int(timestamp_str[4:6])
+        day = int(timestamp_str[6:8])
+        hour = int(timestamp_str[8:10])
         
-        temps = data['properties']['parameter']['T2M']
-        precip = data['properties']['parameter']['PRECTOTCORR']
-        winds = data['properties']['parameter']['WS2M']
+        dt = datetime(year, month, day)
+        day_of_year = dt.timetuple().tm_yday
         
-        for timestamp_str in temps.keys():
-            if not timestamp_str.isdigit():  # Skip non-timestamp keys like 'units'
-                continue
-            year = int(timestamp_str[:4])
-            month = int(timestamp_str[4:6])
-            day = int(timestamp_str[6:8])
-            hour = int(timestamp_str[8:10])
-            
-            dt = datetime(year, month, day)
-            day_of_year = dt.timetuple().tm_yday
-            
-            temp_val = temps[timestamp_str]
-            precip_val = precip[timestamp_str]
-            wind_val = winds[timestamp_str]
-            
-            if temp_val != -999:
-                grouped[day_of_year][hour]['temp'].append(temp_val)
-            if precip_val != -999:
-                grouped[day_of_year][hour]['precip'].append(precip_val)
-            if wind_val != -999:
-                grouped[day_of_year][hour]['wind'].append(wind_val)
+        temp_val = temps[timestamp_str]
+        precip_val = precip[timestamp_str]
+        wind_val = winds[timestamp_str]
+        
+        if temp_val != -999:
+            grouped[day_of_year][hour]['temp'].append(temp_val)
+        if precip_val != -999:
+            grouped[day_of_year][hour]['precip'].append(precip_val)
+        if wind_val != -999:
+            grouped[day_of_year][hour]['wind'].append(wind_val)
     
 
 
     # Calculate statistics for each day-hour combination
     for day_of_year in range(1, 367):
-        WEATHER_STATS[day_of_year] = {}
+        weather_stats[day_of_year] = {}
         
         for hour in range(24):
             if hour not in grouped[day_of_year] or not grouped[day_of_year][hour]['temp']:
-                WEATHER_STATS[day_of_year][hour] = [
+                weather_stats[day_of_year][hour] = [
                     {"temperature": 0.0, "precipitation": 0.0, "wind_speed": 0.0},
                     {"very_hot": 0.0, "very_cold": 0.0, "very_windy": 0.0, 
                      "very_wet": 0.0, "very_uncomfortable": 0.0}
@@ -107,13 +97,13 @@ def calculate()->dict:
             
             prob_uncomfortable = max(prob_hot, prob_cold, prob_windy, prob_wet)
             
-            WEATHER_STATS[day_of_year][hour] = [
+            weather_stats[day_of_year][hour] = [
                 {"temperature": round(avg_temp, 1), "precipitation": round(avg_precip, 2), "wind_speed": round(avg_wind, 1)},
                 {"very_hot": round(prob_hot, 2), "very_cold": round(prob_cold, 2), "very_windy": round(prob_windy, 2), 
                  "very_wet": round(prob_wet, 2), "very_uncomfortable": round(prob_uncomfortable, 2)}
             ]
     
-    return WEATHER_STATS
+    return weather_stats
 
 
 def get_prediction(day:int, lat:float, lon:float)->dict:
@@ -128,4 +118,4 @@ def get_prediction(day:int, lat:float, lon:float)->dict:
         day_of_year = day
     
     # Return calculated stats, or empty dict if not available
-    return WEATHER_STATS.get(day_of_year, {})
+    return calculate().get(day_of_year, {})
