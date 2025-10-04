@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./static/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+     <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
     <title>Weather app</title>
 </head>
 <body>
@@ -10,11 +18,16 @@
         <h1>Weather App</h1>
         <p>This app will help you predict the weather on the given day in the given place!</p>
         <form action="" onsubmit="handler(event)">
-            <label for="day"></label>
+            <label for="day">Day</label>
             <input type="date" id="day" name="day" required>
+            <label for="lat">Latitude</label>
+            <input type="text" id="lat" name="lat" required>
+            <label for="lon">Longitude</label>
+            <input type="text" id="lon" name="lon" required>
             <button>Get my prediction</button>
         </form>
+        <div id="map"></div>
     </main>
 </body>
-<script> function handler(event){alert("AAAAAAAAAAAAAAAAAAAa")}</script>
+<script src="./static/main.js"></script>
 </html>
