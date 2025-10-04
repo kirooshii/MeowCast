@@ -34,7 +34,7 @@ def test():
 #Run the app using waitress for production, or Flask for development
 if __name__ == "__main__":
     if len(sys.argv) == 1:
-        app.run(port=8000 debug=True)
+        app.run(port=8000, debug=True)
     elif len(sys.argv) == ARGS_LENGTH:
         try:
             host = sys.argv[1]
