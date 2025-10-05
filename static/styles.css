@@ -251,3 +251,13 @@ button:active{transform:translateY(1px)}
 .leaflet-popup-content-wrapper{background:var(--card); color:var(--muted)}
 .center{display:flex;align-items:center;justify-content:center}
 :focus{outline:2px solid rgba(90,160,255,0.12);outline-offset:2px}
+button{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:12px;
+  cursor:pointer;
+  box-shadow: 0 8px 20px rgba(75,140,255,0.12);
+  font-weight:600;
+}

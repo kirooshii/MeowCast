@@ -197,3 +197,13 @@ function graphHandler(event) {
     }
 }
 
+function downloadJson() {
+    if (weatherData && Object.keys(weatherData).length > 0) {
+        const jsonStr = JSON.stringify(weatherData, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(jsonStr);
+        const a = document.createElement('a');
+        a.href = dataUri;
+        a.download = 'data.json';
+        a.click();
+    }
+}
