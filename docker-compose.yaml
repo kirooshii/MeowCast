@@ -1,6 +1,6 @@
 services:
   service:
-    image: "dafraer/weather-app:1.0"
+    image: "dafraer/weather-app:1.1"
     container_name: service
     environment:
     #Change the environmental variables to your own
