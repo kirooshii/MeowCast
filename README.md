@@ -50,7 +50,7 @@ With clear visualizations and downloadable data options, WeatherBuddy helps you 
 ## Getting Started
 
 ### Try WeatherBuddy for Yourself
-WordBuddy is available on web! Try it out: [WeatherBuddy](http://147.45.210.161/).  
+WeatherBuddy is available on web! Try it out: [WeatherBuddy](http://147.45.210.161/).  
 For a full list of features, check out the [Features](#features) section.
 
 ### Run Locally
