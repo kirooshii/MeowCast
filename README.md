@@ -117,3 +117,4 @@ A quick look at the stack that powers WeatherBuddy:
 <!-- CONTACT -->
 ## Contact Info
 Kamil Nuriev - kdnuriev@gmail.com
+Tobías Ezequiel Fleitas Montiel - fleitastobias14@gmail.com
