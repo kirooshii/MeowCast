@@ -7,4 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD [ "python", "./your-daemon-or-script.py" ]
+EXPOSE 8080
+
+CMD ["sh", "-c", "python3 main.py ${HOST} ${PORT}"]

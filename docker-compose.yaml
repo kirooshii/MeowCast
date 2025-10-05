@@ -1,0 +1,11 @@
+services:
+  service:
+    image: "dafraer/weather-app:1.0"
+    container_name: service
+    environment:
+    #Change the environmental variables to your own
+      PORT: "8080"
+      HOST: "0.0.0.0"
+    restart: always
+    ports:
+      - "80:8080"
