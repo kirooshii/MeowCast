@@ -119,3 +119,5 @@ A quick look at the stack that powers WeatherBuddy:
 Kamil Nuriev - kdnuriev@gmail.com
 <br>
 Tobías Ezequiel Fleitas Montiel - fleitastobias14@gmail.com
+<br>
+Ilia Kurnosov - ilkurnosov@gmail.com
