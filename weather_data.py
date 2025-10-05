@@ -1,9 +1,9 @@
-import json
 from collections import defaultdict
 from datetime import datetime, date
 from statistics import mean
 import requests
-import numpy as np
+import asyncio
+import aiohttp
 HOT_THRESH = 30.0
 COLD_THRESH = -20.0    
 WINDY_THRESH = 10.0   # m/s
@@ -12,12 +12,21 @@ POWER_HOURLY_API = "https://power.larc.nasa.gov/api/temporal/hourly/point"
 START_YEAR= 2020
 END_YEAR = 2024
 
+def get_tasks(session, params, fmt_day):
+    tasks = []
+    for year in range (START_YEAR, END_YEAR):
+        params["start"] = f"{year}{fmt_day}"
+        params["end"] = f"{year}{fmt_day}"
+        tasks.append(session.get(POWER_HOURLY_API, params=params))
+    return tasks
 
 # Fetch temperature, precipitation and wind speed data from NASA POWER API
-def get_nasa_data(start_day:int, end_day:int, lat:float, lon:float) -> dict:
+async def get_nasa_data(fmt_day:str, lat:float, lon:float) -> list:
+    data = []
+
     params = {
-        "start": start_day,
-        "end": end_day,
+        "start": fmt_day,
+        "end": fmt_day,
         "latitude": lat,
         "longitude": lon,
         "community": "re",
@@ -25,37 +34,36 @@ def get_nasa_data(start_day:int, end_day:int, lat:float, lon:float) -> dict:
         "format": "JSON",
         "units": "metric"
     }
-    response = requests.get(POWER_HOURLY_API, params=params)
-    return response.json()
+    async with aiohttp.ClientSession() as session: 
+       tasks = get_tasks(session, params, fmt_day)
+       responses = await asyncio.gather(*tasks)
+       for response in responses:
+           data.append(await response.json())
+    return data
 
 def get_prediction(fmt_day:str, lat:float, lon:float)->dict:
     weather_stats = {}
     
-    # Fetch data year by year (API has limits on JSON response size)
     grouped = defaultdict(lambda: {'temp': [], 'precip': [], 'wind': []})
 
-    data = get_nasa_data(f'{START_YEAR}{fmt_day}', f'{END_YEAR}{fmt_day}', lat, lon)
+    #Fetch data year by year asynchronously
+    data = asyncio.run(get_nasa_data(fmt_day, lat, lon))
 
-    if 'parameters' not in data:
+    if 'parameters' not in data[0]:
         print("Error fetching data")
         return {}
     
-    temps = data['properties']['parameter']['T2M']
-    precip = data['properties']['parameter']['PRECTOTCORR']
-    winds = data['properties']['parameter']['WS2M']
-    
-    for y in range(START_YEAR, END_YEAR+1):
-        for h in range(24):
-            timestamp_str = f"{y}{fmt_day}{h:02d}"
+    for d in data:
+        temps = d['properties']['parameter']['T2M']
+        precip = d['properties']['parameter']['PRECTOTCORR']
+        winds = d['properties']['parameter']['WS2M']
+        for timestamp_str in temps:
             if not timestamp_str.isdigit():  # Skip non-timestamp keys like 'units'
                 continue
             year = int(timestamp_str[:4])
             month = int(timestamp_str[4:6])
             day = int(timestamp_str[6:8])
             hour = int(timestamp_str[8:10])
-            
-            dt = datetime(year, month, day)
-            day_of_year = dt.timetuple().tm_yday
             
             temp_val = temps[timestamp_str]
             precip_val = precip[timestamp_str]
@@ -67,8 +75,6 @@ def get_prediction(fmt_day:str, lat:float, lon:float)->dict:
                 grouped[hour]['precip'].append(precip_val)
             if wind_val != -999:
                 grouped[hour]['wind'].append(wind_val)
-    
-
 
     for hour in range(24):
         if hour not in grouped or not grouped[hour]['temp']:
