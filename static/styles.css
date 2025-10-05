@@ -1,50 +1,61 @@
-/* styles.css — Dark dashboard style for Weather App
-   Drop this into ./static/styles.css
+/* styles.css — Dark dashboard style for Weather App (fixed version)
+   - Page background covers entire viewport (no white gaps on scroll)
+   - Chart uses an aspect-ratio wrapper (no stretching)
+   - Comfort card aura changes based on --uncomfort-percent (0..100)
 */
 
 :root{
-  --bg:#071021; /* page background */
-  --card:#0f1724; /* card background */
-  --card-2:#0b1726; /* slightly different card */
+  --bg-start:#071021;            /* page background top */
+  --bg-end:#071424;              /* page background bottom */
+  --card:#0f1724;                /* card background */
   --muted:#98a3b3;
   --accent:#3aa0ff;
   --accent-2:#5b8cff;
-  --danger:#b62525;
   --glass: rgba(255,255,255,0.03);
   --glass-2: rgba(255,255,255,0.02);
   --radius:14px;
   --shadow: 0 6px 18px rgba(3,10,18,0.6);
   --card-shadow: 0 8px 30px rgba(2,8,18,0.7);
+  --uncomfort-percent: 0; /* 0 = comfortable (green), 100 = uncomfortable (red) */
+  /* compute hue: 120 (green) -> 0 (red) as percent goes 0 -> 100 */
+  --comfort-h: calc(120 - (var(--uncomfort-percent) * 1.2));
 }
 
-/* Reset & base */
+/* -------------------
+   Reset & page layout
+   ------------------- */
 *{box-sizing:border-box}
-html,body{height:100%}
-body{
+html,body{
+  height:100%;
   margin:0;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: linear-gradient(180deg, var(--bg) 0%, #071424 100%);
+  padding:0;
+  /* ensure the page background covers all scroll space (no white) */
+  background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
+  background-attachment: fixed;
   color:#dbe8ff;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
+
+/* Main container: semi-transparent, so page background shows when you scroll */
 main{
   max-width:1180px;
   margin:28px auto;
   padding:28px;
   border-radius:16px;
+  /* subtle surface to set the app panels apart while letting page bg show */
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+  min-height: calc(100vh - 56px); /* ensures main spans the viewport to avoid white below */
 }
 
-h1{
-  margin:0 0 6px 0;
-  font-weight:600;
-  letter-spacing:0.2px;
-  color:#ecf6ff;
-  font-size:20px;
-}
-main p{color:var(--muted); margin:4px 0 18px 0}
+/* Titles */
+h1{margin:0 0 6px 0;font-weight:600;letter-spacing:0.2px;color:#ecf6ff;font-size:20px}
+main p{color:var(--muted);margin:4px 0 18px 0}
 
-/* Top form */
+/* -------------------
+   Top form
+   ------------------- */
 form{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 form label{font-size:13px;color:var(--muted);margin-right:6px}
 form input[type="date"],
@@ -60,7 +71,6 @@ form select{
   transition:all .18s ease;
 }
 form input:focus, form select:focus{box-shadow:0 4px 20px rgba(58,160,255,0.08); border-color:var(--accent)}
-
 form button{
   background:linear-gradient(135deg,var(--accent),var(--accent-2));
   color:white;
@@ -75,10 +85,22 @@ form button{
 /* Loading */
 #loading{margin:14px 0;padding:10px 12px;border-radius:10px;background:var(--glass);display:inline-block}
 
-/* Map */
-#map{height:360px;border-radius:12px;overflow:hidden;margin:18px 0;border:1px solid rgba(255,255,255,0.03);box-shadow:var(--card-shadow);}
+/* -------------------
+   Map
+   ------------------- */
+#map{
+  height:360px;
+  border-radius:12px;
+  overflow:hidden;
+  margin:18px 0;
+  border:1px solid rgba(255,255,255,0.03);
+  box-shadow:var(--card-shadow);
+  background: linear-gradient(180deg, rgba(6,12,20,0.6), rgba(8,14,22,0.35));
+}
 
-/* Result grid */
+/* -------------------
+   Result grid (cards)
+   ------------------- */
 #result{
   display:grid;
   grid-template-columns: repeat(4, 1fr);
@@ -92,6 +114,7 @@ form button{
   color:#f2f9ff;
 }
 
+/* small card base */
 .small-container{
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   border-radius:var(--radius);
@@ -99,22 +122,70 @@ form button{
   min-height:110px;
   box-shadow:var(--shadow);
   border:1px solid rgba(255,255,255,0.02);
+  transition: box-shadow .22s ease, transform .18s ease;
 }
+.small-container:hover{ transform: translateY(-4px); box-shadow: 0 14px 40px rgba(2,8,18,0.6); }
 .small-container h3{margin:0 0 8px 0;font-size:15px}
 .small-container p{margin:6px 0;color:var(--muted);font-size:14px}
 
-/* Specific card styling */
+/* specific cards (subtle color treatments) */
 #precip{background:linear-gradient(180deg, rgba(11,22,36,0.4), rgba(10,18,30,0.2));}
 #wind-speed{background:linear-gradient(180deg, rgba(6,16,28,0.45), rgba(10,20,32,0.2));}
 #temp{background:linear-gradient(180deg, rgba(8,18,30,0.45), rgba(6,14,24,0.18));}
-#comfort{
-  background: linear-gradient(180deg, rgba(182,37,37,0.12), rgba(182,37,37,0.06));
-  color:#ffecec;
-  border:1px solid rgba(182,37,37,0.2);
-}
-#comfort h3{color:#ffecec}
 
-/* Graph area: Make it span full width */
+/* -------------------
+   Comfort card (dynamic aura)
+   ------------------- */
+/*
+  Usage (JS):
+    // percent = value between 0 and 100 (0 comfortable / 100 very uncomfortable)
+    document.getElementById('comfort').style.setProperty('--uncomfort-percent', Math.round(percent));
+*/
+#comfort{
+  /* compute hue on the fly using --uncomfort-percent (0..100) */
+  --comfort-h: calc(120 - (var(--uncomfort-percent) * 1.2));
+  border-radius:var(--radius);
+  padding:16px;
+  min-height:110px;
+  position:relative;
+  overflow:visible;
+  /* background softly tinted by hue */
+  background:
+    linear-gradient(180deg,
+      hsl(var(--comfort-h) 40% 11% / 0.26),
+      hsl(var(--comfort-h) 40% 11% / 0.08)
+    ),
+    linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border:1px solid rgba(255,255,255,0.02);
+  box-shadow:
+    0 10px 28px hsla(var(--comfort-h), 60%, 20%, 0.10),
+    inset 0 1px 0 rgba(255,255,255,0.02);
+  color: #f8fbf8;
+  transition: box-shadow .32s ease, background .32s ease, transform .2s ease;
+}
+
+/* aura ring using pseudo-element (soft colored glow) */
+#comfort::after{
+  content:'';
+  position:absolute;
+  left:-6px; right:-6px; top:-6px; bottom:-6px;
+  border-radius:calc(var(--radius) + 6px);
+  z-index:-1;
+  filter: blur(18px);
+  opacity:0.75;
+  background: linear-gradient(90deg,
+    hsla(var(--comfort-h), 70%, 50%, 0.12),
+    hsla(calc(var(--comfort-h) + 10), 70%, 50%, 0.06)
+  );
+  transition: background .32s ease, opacity .32s ease;
+}
+
+/* header color */
+#comfort h3{color: hsl(var(--comfort-h) 80% 88%); margin:0 0 8px 0; font-weight:600}
+
+/* -------------------
+   Graph area (span full width) — keep aspect ratio to avoid stretching
+   ------------------- */
 .big-container{
   grid-column:1 / -1;
   background: linear-gradient(180deg, rgba(2,8,18,0.6), rgba(10,22,34,0.4));
@@ -124,20 +195,42 @@ form button{
   border:1px solid rgba(255,255,255,0.02);
 }
 
+/* graph controls */
 #select-graph{display:flex;gap:10px;align-items:center;margin-bottom:12px}
 #select-graph label h3{margin:0;color:#e9f5ff}
 #select-graph select{min-width:200px}
-#myChart{width:100% !important; height:360px !important; background:linear-gradient(180deg, rgba(12,22,36,0.6), rgba(5,12,22,0.3)); border-radius:12px;padding:8px}
 
-/* Chart.js customizations via CSS (canvas container) */
+/* chart wrapper keeps aspect ratio to prevent stretched canvas */
+.chart-wrapper{
+  width:100%;
+  border-radius:12px;
+  padding:8px;
+  background: linear-gradient(180deg, rgba(12,22,36,0.6), rgba(5,12,22,0.3));
+  overflow:hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  aspect-ratio: 16 / 6; /* change this if you'd like taller/shorter charts */
+}
+
+/* canvas fills wrapper exactly and lets Chart.js handle internal scaling */
+#myChart{
+  width:100% !important;
+  height:100% !important;
+  display:block;
+  border-radius:10px;
+}
+
+/* Canvas fallback / block display */
 canvas{display:block}
 
-/* Small screens responsiveness */
+/* -------------------
+   Responsiveness
+   ------------------- */
 @media (max-width:1000px){
   main{padding:18px}
   #map{height:280px}
   #result{grid-template-columns: repeat(2,1fr)}
   .big-container{grid-column:1 / -1}
+  .chart-wrapper{aspect-ratio: 16 / 7}
 }
 
 @media (max-width:600px){
@@ -145,20 +238,16 @@ canvas{display:block}
   form{flex-direction:column;align-items:stretch}
   form input, form select{width:100%}
   #map{height:220px}
-  #myChart{height:240px !important}
-  main{margin:10px}
+  .chart-wrapper{aspect-ratio: 16 / 9}
+  main{margin:10px;padding:14px}
 }
 
-/* Tiny UI polish */
+/* -------------------
+   Tiny polish & overrides
+   ------------------- */
 a{color:var(--accent)}
 button:active{transform:translateY(1px)}
-
-/* Leaflet overrides */
 .leaflet-control{border-radius:10px}
 .leaflet-popup-content-wrapper{background:var(--card); color:var(--muted)}
-
-/* Utility */
 .center{display:flex;align-items:center;justify-content:center}
-
-/* Accessibility: focus styles */
 :focus{outline:2px solid rgba(90,160,255,0.12);outline-offset:2px}

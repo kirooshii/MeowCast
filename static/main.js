@@ -111,6 +111,7 @@ function displayWeatherData(data) {
     avgWindyProb /= 24;
     avgWetProb /= 24;
     // Update temperature
+    document.getElementById('comfort').style.setProperty('--uncomfort-percent', Math.round(avgUncomfortableProb * 100));
     document.getElementById('temp').innerHTML = `
     <h3>Temperature</h3>
     <p>Min: ${mnTemp.toFixed(2)}C°</p>
