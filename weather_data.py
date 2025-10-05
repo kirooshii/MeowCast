@@ -12,9 +12,10 @@ POWER_HOURLY_API = "https://power.larc.nasa.gov/api/temporal/hourly/point"
 START_YEAR= 2020
 END_YEAR = 2024
 
-def get_tasks(session, params, fmt_day):
+def get_tasks(session, base_params, fmt_day):
     tasks = []
-    for year in range (START_YEAR, END_YEAR):
+    for year in range (START_YEAR, END_YEAR+1):
+        params = base_params.copy()
         params["start"] = f"{year}{fmt_day}"
         params["end"] = f"{year}{fmt_day}"
         tasks.append(session.get(POWER_HOURLY_API, params=params))
