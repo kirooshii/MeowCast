@@ -9,7 +9,7 @@ COLD_THRESH = -20.0
 WINDY_THRESH = 10.0   # m/s
 WET_THRESH = 1.0      # mm/hr
 POWER_HOURLY_API = "https://power.larc.nasa.gov/api/temporal/hourly/point"
-START_YEAR= 2020
+START_YEAR= 2001
 END_YEAR = 2024
 
 def get_tasks(session, base_params, fmt_day):
