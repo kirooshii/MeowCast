@@ -78,19 +78,19 @@ Now your app should be up and running locally!
 <!-- FEATURES -->
 ## Features
 
-* **Flexible location input**
+* **Flexible location input:**
     Drop a pin on the map to target exactly where you care about.
 
-* **Any date**
+* **Choose any date:**
     Query a specific calendar date  (handy for planning seasonal events).
 
-* **Probability-based condition flags**
+* **Probability-based condition flags:**
     See chances of “very hot,” “very cold,” “very windy,” “very wet,” or “very uncomfortable” conditions, derived from NASA POWER API data (2001–2024).
 
-* **Clear visualizations**
+* **Clear visualizations:**
     Visualize hourly data using graphs.
 
-* **Downloadable outputs**
+* **Downloadable outputs:**
   Export JSON that includes source data.
 
 > Note: WeatherBuddy uses historical NASA data to estimate probabilities—not a short-term forecast. Results describe historical likelihoods and trends and may not reflect sudden real-time changes.
