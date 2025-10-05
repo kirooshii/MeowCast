@@ -99,7 +99,11 @@ def get_prediction(fmt_day:str, lat:float, lon:float)->dict:
         prob_windy = sum(1 for w in wind_list if w > WINDY_THRESH) / len(wind_list) if wind_list else 0.0
         prob_wet = sum(1 for p in precip_list if p > WET_THRESH) / len(precip_list) if precip_list else 0.0
         
-        prob_uncomfortable = max(prob_hot, prob_cold, prob_windy, prob_wet)
+        #probability (A or B) is p(A) + p(B) – p(A and B) if A and B are not mutually exclusive
+        #If they are mutually exclusive the probability (A or B) is p(A) + p(B)
+        prob_bad_temp = prob_cold + prob_hot
+        prob_windy_or_wet = prob_windy + prob_wet - (prob_windy * prob_wet)
+        prob_uncomfortable = prob_bad_temp + prob_windy_or_wet - (prob_bad_temp*prob_windy_or_wet)
         
         weather_stats[hour] = [
             {"temperature": round(avg_temp, 1), "precipitation": round(avg_precip, 2), "wind_speed": round(avg_wind, 1)},
