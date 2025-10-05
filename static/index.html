@@ -11,6 +11,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Weather app</title>
 </head>
 <body>
@@ -27,27 +28,46 @@
             <button>Get my prediction</button>
         </form>
         <div id="map"></div>
+        <div id="loading" style="display:none;">Loading...It may take some time</div>
         <article id="result">
             <h2>Your prediction</h2>
             <article id="temp" class="small-container">
                 <h3>Temperature</h3>
-                <p>--C°</p>
+                <p>Min: --C°</p>
+                <p>Max: --C°</p>
+                <p>Probability of a very hot weather: --%</p>
+                <p>Probability of a very cold weather: --%</p>
             </article>
             <article id="precip" class="small-container">
                 <h3>Precipitation</h3>
                 <p>--mm/hr</p>
+                <p>Probability of a very wet weather: --%</p>
             </article>
             <article id="wind-speed" class="small-container">
                 <h3>Wind Speed</h3>
                 <p>--m/s</p>
+                <p>Probability of a very windy weather: --%</p>
             </article>
             <article id="comfort" class="small-container">
                 <h3>Comfortability</h3>
-                <p>--</p>
+                <p>Probability of a very uncomfortable weather: --%</p>
             </article>
             <article id="graph" class="big-container">
-                <h3>Wind Speed by hours</h3>
+                <form id="select-graph" action="" onsubmit="graphHandler(event)" hidden>
+                    <label for="chart"><h3>Graph of the hourly data</h3></label>
+                    <select name="type" id="chart">
+                        <option value="temperature">Temperature</option>
+                        <option value="wind_speed">Wind Speed</option>
+                        <option value="precipitation">Precipitation</option>
+                    </select>
+                    <button>Show</button>
+                </form>
+                <div>
+                    <canvas id="myChart"></canvas>
+                </div>
+                    
             </article>
+            <button id="download" onclick="downloadJson()">Download the data in json format</button>
         </article>
     </main>
 </body>
